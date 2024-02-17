@@ -1,0 +1,6 @@
+Ejecutar Docker
+    * docker compose up -d
+
+Ejecutar el backend 
+    * npm run start:dev
+
