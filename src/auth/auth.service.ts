@@ -3,21 +3,22 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import * as bcryptjs from 'bcryptjs'
 
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { CreateUserDto, UpdateAuthDto, RegisterUserDto, LoginDto } from './dto'
+
+
 import { User } from './entities/user.entity';
 import { Model } from 'mongoose';
-import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 
 import { JwtPayload } from './interfaces/jwt-plaload';
+import { LoginResponse } from './interfaces/login-response';
 
 @Injectable()
 export class AuthService {
 
   constructor(
-    @InjectModel(User.name) 
-    private userModel: Model<User>, 
+    @InjectModel(User.name)
+    private userModel: Model<User>,
     private jwtService: JwtService,
   ) { }
 
@@ -40,50 +41,64 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const {email, password} = loginDto;
-    const user = await  this.userModel.findOne({email})
-    if(!user){
+    const { email, password } = loginDto;
+    const user = await this.userModel.findOne({ email })
+    if (!user) {
       throw new UnauthorizedException('Credenciales No validas - email')
     }
 
-    if(!bcryptjs.compareSync(password, user.password)){
+    if (!bcryptjs.compareSync(password, user.password)) {
       throw new UnauthorizedException('Credenciales No validas - password')
     }
 
-    const { password:_, ...rest} = user.toJSON();
+    const { password: _, ...rest } = user.toJSON();
 
     return {
-      user: rest, 
-      token: this.getJwtToken({id: user.id})
+      user: rest,
+      token: this.getJwtToken({ id: user.id })
     }
-    
-    /*
-    User {_id, name, email, roles}
-    Token -> asda dasdasdas dasdasdas 
-    */
+
   }
 
-  findAll() {
-    return `aaaaaaaa`;
+  async register(registerDto: RegisterUserDto): Promise<LoginResponse> {
+    const user = await this.create(registerDto)
+    return {
+      user: user,
+      token: this.getJwtToken({ id: user._id })
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  findAll(): Promise<User[]> {
+    return this.userModel.find();
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
+  async findUserById(id: string) {
+    const user = await this.userModel.findById(id)
+    const { password, ...rest } = user.toJSON()
+    return rest;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+  // async checkToken(): Promise<string | undefined> {
+  //   const  algo = await 'sadasdas'
+  //   return algo;
+  // }
+  // findOne(id: number) {
+  //   return `This action returns a #${id} auth`;
+  // }
+
+  // update(id: number, updateAuthDto: UpdateAuthDto) {
+  //   return `This action updates a #${id} auth`;
+  // }
+
+  // remove(id: number) {
+  //   return `This action removes a #${id} auth`;
+  // }
 
 
-  getJwtToken(payload: JwtPayload){
+  getJwtToken(payload: JwtPayload) {
     const token = this.jwtService.sign(payload)
     return token
   }
 
-  
+
 }
