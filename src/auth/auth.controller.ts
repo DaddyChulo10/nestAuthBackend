@@ -27,8 +27,8 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  @UseGuards(AuthGuard)
-  @Get()
+  // @UseGuards(AuthGuard)
+  @Get('/getPeaople')
   findAll(@Request() req: Request) {
     // const user = req['user']
     // return user
