@@ -60,12 +60,13 @@ export class AuthService {
 
   }
 
-  async register(registerDto: RegisterUserDto): Promise<LoginResponse> {
+  async register(registerDto: RegisterUserDto): Promise<boolean> {
     const user = await this.create(registerDto)
-    return {
-      user: user,
-      token: this.getJwtToken({ id: user._id })
-    };
+    return true
+    // return {
+    //   user: user,
+    //   token: this.getJwtToken({ id: user._id })
+    // };
   }
 
   findAll(): Promise<User[]> {
